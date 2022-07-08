@@ -17,6 +17,11 @@ const newRecipe = {
   creator: 'Felipe',
 }
 
+const titleFilter =  { title: 'Rigatoni alla Genovese' }
+const updateDuration = { duration : 100 };
+const newOption = { new: true };
+const deletingFilter = { title: 'Carrot Cake' };
+
 // A solution using .then().catch()
 mongoose
   .connect(MONGODB_URI)
@@ -33,14 +38,11 @@ mongoose
   })
   .then(() => {
     console.log('2. Many recipes were added')
-    const filter = { title: 'Rigatoni alla Genovese'}
-    const update = { duration: 100 }
-    return Recipe.findOneAndUpdate(filter, update, { new: true })
+    return Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption)
   })
   .then(() => {
     console.log('3. One recipe was updated')
-    const filter = { title: 'Carrot Cake' }
-    return Recipe.deleteOne(filter)
+    return Recipe.deleteOne(deletingFilter)
   })
   .then(() => {
     console.log('4. One recipe was deleted')
@@ -55,18 +57,15 @@ const interactingWithDB = async () => {
   try {
     const connection =  await mongoose.connect(MONGODB_URI)
     console.log(`Connected to the database: ${connection.connection.name}`)
+    await Recipe.create(newRecipe)
     await Recipe.deleteMany()
     await Recipe.create(newRecipe)
     console.log('1. One recipe was added')
     await Recipe.insertMany(data)
     console.log('2. Many recipes were added')
-    await Recipe.findOneAndUpdate({
-      title: 'Rigatoni alla Genovese' },
-      { duration: 100 }, 
-      { new : true},
-    )
+    await Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption)
     console.log('3. One recipe was updated')
-    await Recipe.deleteOne({ title: 'Carrot Cake' })
+    await Recipe.deleteOne(deletingFilter)
     console.log('4. One recipe was deleted')
     await mongoose.disconnect()
   } catch (error) {
@@ -77,36 +76,41 @@ interactingWithDB()
 
 
 // A solution with Promise.all()
-const handlePromise = () => {
-  const promiseArr = [
-    mongoose.connect(MONGODB_URI),
-    Recipe.deleteMany(),
-    Recipe.create(newRecipe),
-    Recipe.insertMany(data),
-    Recipe.findOneAndUpdate({
-        title: 'Rigatoni alla Genovese' },
-        { duration: 100 }, 
-        { new : true},
-      ),
-    Recipe.deleteOne({ title: 'Carrot Cake' }),
-  ]
-  return promiseArr
-}
+// A note about trying to solve with Promise.all => the 2 cases below
+// That will work, but........ The executions are actually being called when the promiseArr is declared 
+//    and you can't make save in a variable to invoke that function after like:
+//    const createOneRecipe = Recipe.create
+//    createOneRecipe(newRecipe) => This will throw an error
+//    so you need to create things and order and you can't create a unique recipe, delete it and recreate the same recipe
+//    because the execution doesn't necessarily respect the order in the PromiseArr and every promise is fired concurrently.
+// So if you need to execute sequentially you should break in several Promise.all() that seems to defeat the purpose for that case.
 
-Promise.all(handlePromise())
-  .then(() => mongoose.disconnect())
-  .then(() => console.log('database disconnected'))
-  .catch(() => console.log('Something went wrong in at least one promise'))
+// const handlePromise = () => {
+//   const promiseArr = [
+//     mongoose.connect(MONGODB_URI),
+//     Recipe.deleteMany(),
+//     Recipe.create(newRecipe),
+//     Recipe.insertMany(data),
+//     Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption),
+//     Recipe.deleteOne(deletingFilter),
+//   ]
+//   return promiseArr
+// }
+
+// Promise.all(handlePromise())
+//   .then(() => mongoose.disconnect())
+//   .then(() => console.log('database disconnected'))
+//   .catch(() => console.log('Something went wrong in at least one promise'))
 
 // A solution using async / await and Promise.all()
-const resolveMyPromises = async () => {
-  try {
-    await Promise.all(handlePromise())
-    await mongoose.disconnect()
-    console.log('Database disconnected')
-  } catch (error) {
-    console.log(error)
-  }
-};
+// const resolveMyPromises = async () => {
+//   try {
+//     await Promise.all(handlePromise())
+//     await mongoose.disconnect()
+//     console.log('Database disconnected')
+//   } catch (error) {
+//     console.log(error)
+//   }
+// };
 
-resolveMyPromises()
+// resolveMyPromises()
