@@ -24,34 +24,35 @@ const newOption = { new: true };
 const deletingFilter = { title: 'Carrot Cake' };
 
 // A solution using .then().catch()
-// mongoose
-//   .connect(MONGODB_URI)
-//   .then(x => {
-//     console.log(`Connected to the database: "${x.connection.name}"`);
-//     return Recipe.deleteMany()
-//   })
-//   .then(() => {
-//     return Recipe.create(newRecipe)
-//   })
-//   .then(() => {
-//     console.log('1. One recipe was added')
-//     return Recipe.insertMany(data)
-//   })
-//   .then(() => {
-//     console.log('2. Many recipes were added')
-//     return Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption)
-//   })
-//   .then(() => {
-//     console.log('3. One recipe was updated')
-//     return Recipe.deleteOne(deletingFilter)
-//   })
-//   .then(() => {
-//     console.log('4. One recipe was deleted')
-//     return mongoose.disconnect()
-//   })
-//   .catch(error => {
-//     console.error('Error connecting to the database', error);
-//   });
+mongoose
+  .connect(MONGODB_URI)
+  .then(x => {
+    console.log(`Connected to the database: "${x.connection.name}"`);
+    return Recipe.deleteMany()
+  })
+  .then(() => {
+    return Recipe.create(newRecipe)
+  })
+  .then(() => {
+    console.log('1. One recipe was added')
+    return Recipe.insertMany(data)
+  })
+  .then(() => {
+    console.log('2. Many recipes were added')
+    return Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption)
+  })
+  .then(() => {
+    console.log('3. One recipe was updated')
+    return Recipe.deleteOne(deletingFilter)
+  })
+  .then(() => {
+    console.log('4. One recipe was deleted')
+    return mongoose.disconnect()
+  })
+  .then(() => console.log('5. Connection with DB closed'))
+  .catch(error => {
+    console.error('Error connecting to the database', error);
+  });
 
 // A solution using async / await
 // const interactingWithDB = async () => {
@@ -69,6 +70,7 @@ const deletingFilter = { title: 'Carrot Cake' };
 //     await Recipe.deleteOne(deletingFilter)
 //     console.log('4. One recipe was deleted')
 //     await mongoose.disconnect()
+//     console.log('5. Connection with DB closed')
 //   } catch (error) {
 //     console.log(error)
 //   }
@@ -92,22 +94,22 @@ const deletingFilter = { title: 'Carrot Cake' };
 //      => You can break execution having to many functions call that could colide.
 // So if you need to execute sequentially you should break in several Promise.all() that seems to defeat the purpose for that case.
 
-const handlePromise = () => {
-  const promiseArr = [
-    mongoose.connect(MONGODB_URI),
-    Recipe.deleteMany(),
-    Recipe.create(newRecipe),
-    Recipe.insertMany(data),
-    Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption),
-    Recipe.deleteOne(deletingFilter),
-  ]
-  return promiseArr
-}
+// const handlePromise = () => {
+//   const promiseArr = [
+//     mongoose.connect(MONGODB_URI),
+//     Recipe.deleteMany(),
+//     Recipe.create(newRecipe),
+//     Recipe.insertMany(data),
+//     Recipe.findOneAndUpdate(titleFilter, updateDuration, newOption),
+//     Recipe.deleteOne(deletingFilter),
+//   ]
+//   return promiseArr
+// }
 
-Promise.all(handlePromise())
-  .then(() => mongoose.disconnect())
-  .then(() => console.log('database disconnected'))
-  .catch(error => console.log(error, 'Something went wrong in at least one promise'))
+// Promise.all(handlePromise())
+//   .then(() => mongoose.disconnect())
+//   .then(() => console.log('database disconnected'))
+//   .catch(error => console.log(error, 'Something went wrong in at least one promise'))
 
 // A solution using async / await and Promise.all()
 // const resolveMyPromises = async () => {
