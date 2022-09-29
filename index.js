@@ -15,6 +15,7 @@ const newRecipe = {
   dishType: 'breakfast',
   duration: 10,
   creator: 'Felipe',
+  
 }
 
 const titleFilter =  { title: 'Rigatoni alla Genovese' }
